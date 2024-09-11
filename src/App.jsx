@@ -11,6 +11,7 @@ function App() {
   const [title, setTitle] = useState("");
   const [views, setViews] = useState("");
 
+  /** post 조회 */
   const getPosts = async () => {
     const { data } = await axios.get("http://localhost:4000/posts");
     console.log("data :>> ", data);
@@ -25,7 +26,9 @@ function App() {
     queryKey: ["posts"],
     queryFn: getPosts,
   });
+  /** post 조회 */
 
+  /** post 추가 */
   const addPost = async (post) => {
     await axios.post("http://localhost:4000/posts", post);
   };
@@ -47,13 +50,59 @@ function App() {
 
     mutate(post);
   };
+  /** post 추가 */
+
+  /** 프로필 조회 */
+
+  const getProfile = async () => {
+    const { data } = await axios.get("http://localhost:4000/profile");
+    console.log("data :>> ", data);
+    return data;
+  };
+
+  const {
+    data: profile,
+    isPending: profilePending,
+    isError: profileError,
+  } = useQuery({
+    queryKey: ["profile"],
+    queryFn: getProfile,
+  });
+
+  /** 댓글보기 */
+
+  const getComment = async () => {
+    const { data } = await axios.get("http://localhost:4000/comments");
+    return data;
+  };
+
+  const {
+    data: comment,
+    refetch,
+    isPending: commentPending,
+  } = useQuery({
+    queryKey: ["comment"],
+    queryFn: getComment,
+    enabled: false,
+  });
+
+  console.log("comment :>> ", comment);
+
+  const handleGetComment = () => {};
+  /** 댓글보기 */
+
+  if (profilePending) return <div>프로필 조회가 로딩중입니다...</div>;
+  if (profileError) return <div>프로필 조회에 오류가 발생했습니다...</div>;
 
   if (isPending) return <div>로딩중입니다...</div>;
 
   if (isError) return <div>오류가 발생하였습니다...</div>;
 
+  if (commentPending) <div>로딩중입니다...</div>;
+
   return (
     <>
+      <div>{profile.name}</div>
       <form onSubmit={handleAddPost}>
         <input
           value={title}
@@ -75,6 +124,17 @@ function App() {
           <div key={post.id}>
             <h1>{post.title}</h1>
             <span>{post.views}</span>
+
+            <button
+              onClick={() => {
+                refetch();
+              }}
+            >
+              댓글보기
+            </button>
+            {/* {comment.map((c) => {
+              return <div key={c.id}>c.text</div>;
+            })} */}
           </div>
         );
       })}
