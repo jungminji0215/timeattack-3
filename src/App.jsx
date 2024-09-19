@@ -94,7 +94,7 @@ function App() {
       );
       return data;
     },
-    enabled: true,
+    enabled: !!selectedPostId,
   });
 
   /** ---------------------------- 끝 ---------------------------- */
