@@ -10,6 +10,8 @@ function App() {
 
   const [selectedPostId, setSelectedPostId] = useState(null);
 
+  const [commentsTexts, setCommentsTexts] = useState({});
+
   /** ---------------------------- post 조회 ---------------------------- */
   const {
     data: posts,
@@ -97,6 +99,25 @@ function App() {
     enabled: !!selectedPostId,
   });
 
+  /** ---------------------------- 댓글 작성 ---------------------------- */
+  const addCommentMutation = useMutation({
+    mutationFn: async (newComment) => {
+      axios.post("http://localhost:4000/comments", {
+        text: newComment.text,
+        postId: newComment.postId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["comments"],
+      });
+    },
+  });
+
+  useEffect(() => {
+    console.log("commentsTexts :>> ", selectedPostId);
+  }, [commentsTexts]);
+
   /** ---------------------------- 끝 ---------------------------- */
 
   if (isPostsPending || isProfilePending) return <div>로딩중입니다.</div>;
@@ -138,6 +159,45 @@ function App() {
               <h1>제목 : {post.title}</h1>
               <span>조회수 : {post.views}</span>
             </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+
+                addCommentMutation.mutate({
+                  text: commentsTexts[post.id] || "",
+                  postId: post.id,
+                });
+
+                setCommentsTexts((prev) => {
+                  return {
+                    prev,
+                    [post.id]: "",
+                  };
+                });
+              }}
+            >
+              <p>댓글 입력</p>
+              <input
+                type="text"
+                /** 객체에 접근하는법
+                 * commentsTexts.
+                 * commentsTexts[]
+                 *
+                 *
+                 */
+                value={commentsTexts[post.id] || ""}
+                onChange={(e) => {
+                  setCommentsTexts((prev) => {
+                    return {
+                      prev,
+                      [post.id]: e.target.value,
+                    };
+                  });
+                }}
+              />
+              <button type="submit">댓글 추가</button>
+            </form>
 
             <button
               onClick={() => {
